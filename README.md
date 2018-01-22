@@ -1,0 +1,2 @@
+# InitialsGAN
+Thesis project
