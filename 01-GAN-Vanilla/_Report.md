@@ -5,7 +5,9 @@ It is a vanilla GAN originally trained on the MNIST dataset, adaptions have only
 ## Results 
 Below a gif showing output for every 100 steps (out of 300) of each epoch (of a total of 200 epochs). The output seems to relapse quite often and does not really seem to improve any further I do not feel it is necessary to increase the number of epochs. 
 
-*insert gif here*
+![Output for GAN01](https://github.com/C0rine/InitialsGAN/blob/master/01-GAN-Vanilla/GAN01_gif.gif "Output for GAN01")
+
+*(The gif only plays once so it is clear where is starts and finishes)*
 
 The output is not very realistic, but it can be seen that several things were picked up by the vanilla GAN. Firstly we see how the algorithm quickly picks up upon the black center and white border around the images.
 
