@@ -13,7 +13,7 @@ An example of each of these modes from the real dataset:
 !["Full"](https://github.com/C0rine/InitialsGAN/blob/master/01-GAN-Vanilla/Images/Full.png "Full")
 !["Part"](https://github.com/C0rine/InitialsGAN/blob/master/01-GAN-Vanilla/Images/Part.png "Part")
 
-A static image of the final epoch: 
+A static image of the final epoch for batch size 128: 
 
 ![Output for GAN02](https://github.com/C0rine/InitialsGAN/blob/master/02-GAN-Convolutional/Images/result_24.png "Output for GAN02")
 
