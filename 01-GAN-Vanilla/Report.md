@@ -1,15 +1,15 @@
 # GAN-vanilla
 Code was adapted from the [pytorch-gan](https://github.com/prcastro/pytorch-gan) repository by [prcastro](https://github.com/prcastro).
-It is a vanilla GAN originally trained on the MNIST dataset, adaptions have only been made to accomodate the intials dataset. All images from the initials dataset were upon loading transformed to 28x28 pixels.
+The images from the initials dataset were upon loading transformed to 28x28 pixels to speed up training. 
 
 ## Results 
-Below a gif showing output for every 100 steps (out of 300) of each epoch (of a total of 200 epochs). The output seems to relapse quite often and does not really seem to improve any further I do not feel it is necessary to increase the number of epochs. 
+Below a gif showing output for every 100 steps (a step being one mini batch) of each epoch (of a total of 200 epochs). The output seems to relapse quite often and does not really seem to improve any further I do not feel it is necessary to increase the number of epochs. 
 
 ![Output for GAN01](https://github.com/C0rine/InitialsGAN/blob/master/01-GAN-Vanilla/Images/GAN01_gif.gif "Output for GAN01")
 
-*(The gif only plays once so it is clear where is starts and finishes)*
+*(The GIF only plays once so it is clear where is starts and finishes, GIF might also take a while to load.)*
 
-The output is not very realistic, but it can be seen that several things were picked up by the vanilla GAN. Firstly we see how the algorithm quickly picks up upon the black center and white border around the images. See the image below for an image from epoch 10. 
+In general the performance of this GAN is pretty bad, but it can be noted that several things were picked up by the vanilla GAN. Firstly we see how the model quickly picks up upon the black center and white border around most initials. See the image below for an image from epoch 10. 
 
 ![Epoch 10](https://github.com/C0rine/InitialsGAN/blob/master/01-GAN-Vanilla/Images/WhiteOutline.png "epoch 10")
 
