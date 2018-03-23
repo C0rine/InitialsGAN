@@ -1,8 +1,8 @@
 # GAN - convolutional
-This in an implementation of a convolutional GAN. I have used the code of Yun Chen as a reference (https://github.com/chenyuntc/pytorch-GAN). The intials dataset was loaded into memory in 64x64 pixels. The output of this GAN is also 64x64. 
+I have used the code of Yun Chen as a reference (https://github.com/chenyuntc/pytorch-GAN) to change the GAN01 into a convolutional one. The intials dataset was loaded into memory in 64x64 pixels. The output of this GAN is also 64x64. 
 
 ## Results 
-I initially started with a batch size of 128. I quickly noticed that the generator performed a whole lot better than the vanilla GAN. As can be seen in the GIF below however the generator does not seem to be fully able to distinguish between the seperate letters. I remains a general blob. It does however capture the two modes again (see underneath the GIF) and seems to have captured the elegance/look and feel of the initials. 
+I initially started with a batch size of 128. I quickly noticed that the generator performed a whole lot better than the vanilla GAN01. As can be seen in the GIF below however the generator does not seem to be fully able to distinguish between the seperate letters. I remains a general blob. It does however capture the two modes again (see underneath the GIF) and seems to have captured the elegance/look and feel of the initials. 
 
 Batch size 128 (1 image per epoch): 
 
@@ -17,11 +17,15 @@ A static image of the final epoch for batch size 128:
 
 ![Output for GAN02](https://github.com/C0rine/InitialsGAN/blob/master/02-GAN-Convolutional/Images/result_24.png "Output for GAN02")
 
-I thereafter quickly tried with a lower batch size of 32 and it seems to find the shape of letters much faster and much more accurately. There also seems to vaguely be a more stylistic difference between the generated images. 
+I thereafter quickly tried with a lower batch size of 32 and it seems to find the shape of letters much faster and much more accurately. There also seems to vaguely be a more stylistic difference between the generated images and the model seems to have picked up the occasion printings errors present in some intials
 
 Batch size 32 (5 images per epoch):
 
-*gif to be implemented here*
+![Output for GAN02](https://github.com/C0rine/InitialsGAN/blob/master/02-GAN-Convolutional/Images/gif_32batchsize.gif "Output for GAN02")
+
+A static image of the final epoch for batch size 32:
+
+![Output for GAN02](https://github.com/C0rine/InitialsGAN/blob/master/02-GAN-Convolutional/Images/result_25-950.png "Output for GAN02")
 
 The model was in both cases running for 25 epochs. It seems the model is still improving at the 25th epoch, but not a lot. I therefore decided model tweaking/trying to implement wasserstein might be a better to improve performance than letter the model run longer.  
 
