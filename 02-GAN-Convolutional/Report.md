@@ -17,7 +17,7 @@ A static image of the final epoch for batch size 128:
 
 ![Output for GAN02](https://github.com/C0rine/InitialsGAN/blob/master/02-GAN-Convolutional/Images/result_24.png "Output for GAN02")
 
-I thereafter quickly tried with a lower batch size of 32 and it seems to find the shape of letters much faster and much more accurately. There also seems to vaguely be a more stylistic difference between the generated images and the model seems to have picked up the occasion printings errors present in some intials
+I thereafter quickly tried with a lower batch size of 32 and it seems to find the shape of letters much faster and much more accurately. There also seems to vaguely be a more stylistic difference between the generated images and the model seems to have picked up the occasional printings errors present in some intials.
 
 Batch size 32 (5 images per epoch):
 
