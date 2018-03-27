@@ -78,4 +78,4 @@ The model was in both cases running for 25 epochs. It seems the model is still i
 * Batch size: once 128, once 32 (see above)
 * Criterion: BCE 
 * Optimizer: Adam
-* Learning rate: 0.0002, beta1 = 0.5
+* Learning rate: 0.0002, beta1 = 0.5, beta2 = 0.999
