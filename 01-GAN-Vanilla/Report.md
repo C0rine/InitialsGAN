@@ -60,4 +60,4 @@ And finally, in some of the output we can kind of detect the lines at which the 
 * Batch size = 100
 * Criterion: BCE 
 * Optimizer: Adam
-* Learning rate: 0.0002
+* Learning rate: 0.0002, Beta1 = 0.9, Beta2 = 0.999 (betas are default)
