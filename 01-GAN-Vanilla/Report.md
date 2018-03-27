@@ -58,5 +58,6 @@ And finally, in some of the output we can kind of detect the lines at which the 
 
 ## Parameter settings
 * Batch size = 100
-* Optimizer function: BCE loss
+* Criterion: BCE 
+* Optimizer: Adam
 * Learning rate: 0.0002
