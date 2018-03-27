@@ -79,3 +79,4 @@ The model was in both cases running for 25 epochs. It seems the model is still i
 * Criterion: BCE 
 * Optimizer: Adam
 * Learning rate: 0.0002, beta1 = 0.5, beta2 = 0.999
+(beta1 set to .5 instead of the default .9 as suggested in https://arxiv.org/pdf/1511.06434.pdf)
