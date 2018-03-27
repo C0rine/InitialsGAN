@@ -76,5 +76,6 @@ The model was in both cases running for 25 epochs. It seems the model is still i
 
 ## Parameter settings
 * Batch size: once 128, once 32 (see above)
-* Optimizer function: BCE loss
+* Criterion: BCE 
+* Optimizer: Adam
 * Learning rate: 0.0002, beta1 = 0.5
