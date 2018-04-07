@@ -10,7 +10,7 @@ epochval = 25
 lrateval = 0.0002
 beta1val = 0.5
 clampval = 0.01
-savepathval = 'Put your savelocation here'
+savepathval = 'Z:/GAN-Training-Results/'
 
 formattedsettings = ''
 
