@@ -12,7 +12,8 @@ Training was done with batch size 8 and the following parameters:
 Training was done on only two conditions at the time. Once on the letter A and letter B, once on two countries (DE and FR). 
 
 ### Training on A and B
-Was run for 88000 steps. 
+Was run for 88000 steps. In all result images, the first two initials are the input images, the middle two initials have the swapped features and the final two initials are the reconstructed input images. 
+
 Some of the best training results:
 
 ![AB1-b](https://github.com/C0rine/InitialsGAN/blob/master/ELEGANT/images/AB-1b.jpg "AB-1b")
