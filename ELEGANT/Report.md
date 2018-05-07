@@ -47,4 +47,4 @@ Was run for 100000 steps. Results never really got good, below some examples.
 
 
 ### Analysis of resuls
-CelebA dataset had really well aligned images for which the features have a clear location in the image (e.g. smile, bangs, beard). The ELEGANT even customly aligns the celebA dataset image (based on pupil location). In the case of the initials dataset we see that the images are not that well aligned and that their features aren't tied to specific locations  
+CelebA dataset had really well aligned images for which the features have a clear location in the image (e.g. smile, bangs, beard). The ELEGANT even customly aligns the celebA dataset image (based on pupil location). In the case of the initials dataset we see that the images are not that well aligned and that their features aren't tied to specific locations. The letters still seems somewhat trainable as they will probably always occupy the same regions of the images and are a (sort of) restricted in their shape. The country however will mostly be related to the decorations around the letters. This is probably so noisy and so diverse that it is hard to capture.  
