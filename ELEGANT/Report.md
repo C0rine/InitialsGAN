@@ -4,12 +4,12 @@ The images from the initials dataset were extracted from the hdf5 file and saved
 Training was done with batch size 8 and the following parameters:
 * G_lr = 2e-4
 * D_lr = 2e-4
-* betas = [0,5, 0.999]
+* betas = [0.5, 0.999]
 * weight_decay = 1e-5
 * step_size = 3000
 * gamma = 0.97
 
-Training was done on only two conditions at the time. Once on the letter A and letter B, once on two countries (DE and FR). 
+Training was done on only two conditions at the time. Once on the letter A and letter B, once on two countries (DE and FR). Training on more features at a time is possible, but would take too long.
 
 ### Training on A and B
 Was run for 88000 steps. In all result images, the first two initials are the input images, the middle two initials have the swapped features and the final two initials are the reconstructed input images. 
