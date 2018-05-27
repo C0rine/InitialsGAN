@@ -76,7 +76,7 @@ def softmax(x):
     return e_x / e_x.sum()
 
 
-def get_inceptionscore(probs, splits):   
+def get_inceptionscore(probs):   
 
     # no. images
     N = len(filenames)
@@ -87,16 +87,16 @@ def get_inceptionscore(probs, splits):
         np_probs.append(softmax(np.asarray(probs[i])))
     
     # Now compute the mean kl-div
+    splits = 10 # hardcoded to confirm to https://github.com/openai/improved-gan/blob/master/inception_score/model.py
     split_scores = []
 
-    for k in range(splits):
-        part =  np.asarray(np_probs[k * (N // splits): (k+1) * (N // splits)], dtype=np.float32)
-        py = np.mean(part, axis=0)
-        scores = []
-        for i in range(part.shape[0]):
-            pyx = part[i, :]
-            scores.append(entropy(pyx, py))
-        split_scores.append(np.exp(np.mean(scores)))
+    scores = []
+    for i in range(splits):
+        part =  np.asarray(np_probs[i * (N // splits): (i+1) * (N // splits)], dtype=np.float32)
+        kl = part * (np.log(part) - np.log(np.expand_dims(np.mean(part, 0), 0)))
+        kl = np.mean(np.sum(kl, 1))
+        scores.append(np.exp(kl))
+    return np.mean(scores), np.std(scores)
 
     return np.mean(split_scores), np.std(split_scores)
 
