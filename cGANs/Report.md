@@ -36,3 +36,9 @@ Results on the initials dataset:
 !["initials_cDCGAN"](https://github.com/C0rine/InitialsGAN/blob/master/cGANs/images/initials_cDCGAN_epochs_20.gif "initials_cDCGAN")
 
 When trained on the properties 'A' and 'B'.
+
+
+## StarGAN
+GitHub repo: https://github.com/yunjey/StarGAN
+
+I would like to use this model, but I do not have enough memory.
