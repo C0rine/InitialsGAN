@@ -41,4 +41,18 @@ When trained on the properties 'A' and 'B'.
 ## StarGAN
 GitHub repo: https://github.com/yunjey/StarGAN
 
-I would like to use this model, but I do not have enough memory.
+~~I would like to use this model, but I do not have enough memory.~~
+Managed to make this work. 
+
+Results on the celebA dataset:
+
+!["CelebA_StarGAN"](https://github.com/C0rine/InitialsGAN/blob/master/cGANs/images/CelebA_StarGAN.gif "CelebA_StarGAN")
+
+The first image in the row is the input image, and after that the generated images with certain attributes imposed on them. In this case these attributes are (from left to right): black hair, blonde hair, brown hair, male, young. 
+
+Results on the initials dataset:
+
+!["initials_StarGAN"](https://github.com/C0rine/InitialsGAN/blob/master/cGANs/images/initials_StarGAN.gif "initials_StarGAN")
+
+The first image is again the input image, the images after that are supposed have imposed the attributes: A, B, C, D and E. We see however that it did not manage to do this at all. 
+(The switch of the input images halfway is due to an interruption in the training process. When I loaded the saved model it picked different images for this output.)
