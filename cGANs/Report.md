@@ -56,3 +56,16 @@ Results on the initials dataset:
 
 The first image is again the input image, the images after that are supposed have imposed the attributes: A, B, C, D and E. We see however that it did not manage to do this at all. 
 (The switch of the input images halfway is due to an interruption in the training process. When I loaded the saved model it picked different images for this output.)
+
+## ACGAN
+GitHub repo: https://github.com/eriklindernoren/PyTorch-GAN/tree/master/implementations/acgan
+
+Results on 32x32 for all letter classes: 
+!["ACGAN_32x32"](https://github.com/C0rine/InitialsGAN/blob/master/cGANs/images/ACGAN_32x32.png "ACGAN_32x32")
+
+Each column is a class listing some generated examples (from left to right: 'a', 'b', 'c', ... , 'z' , '')
+
+Results on 64x64 for 10 letter classes (due to memory constraints):
+!["ACGAN_64x64"](https://github.com/C0rine/InitialsGAN/blob/master/cGANs/images/ACGAN_64x64.png "ACGAN_64x64")
+
+Each column is a class listing some generated examples (from left to right: 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j')
