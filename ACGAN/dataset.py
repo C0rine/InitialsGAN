@@ -23,8 +23,8 @@ def input_transform():
         transforms.ToTensor(),
     ])
 
-def get_dataset(letter, duration=1):
-    return DatasetFromExtractor(hdf5_file, input_transform=input_transform())
+def get_dataset(duration=1):
+    return DatasetFromFolder(hdf5_file, input_transform=input_transform())
 
 class DatasetFromFolder(data.Dataset):
     def __init__(self, hdf5_file, input_transform=None):
@@ -49,3 +49,6 @@ class DatasetFromFolder(data.Dataset):
 
     def __len__(self):
         return len(self.images)
+
+# class LetterDataset(data.Dataset):
+#     def __init__(self, csv_file)
