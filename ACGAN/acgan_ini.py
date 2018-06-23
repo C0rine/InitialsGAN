@@ -16,19 +16,22 @@ import torch.nn.functional as F
 import torch
 
 import dataset
+import extractor
 
 os.makedirs('images', exist_ok=True)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
+parser.add_argument('--n_epochs', type=int, default=2000, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=32, help='size of the batches')
 parser.add_argument('--lr', type=float, default=0.0002, help='adam: learning rate')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
+parser.add_argument('--n_cpu', type=int, default=0, help='number of cpu threads to use during batch generation')
 parser.add_argument('--latent_dim', type=int, default=500, help='dimensionality of the latent space')
-parser.add_argument('--training_feat', type=str, default='letters', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
+parser.add_argument('--training_feat', type=str, default='countries', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
 parser.add_argument('--letter_restr', type=str, default='all', help='restrict training to this letter, use \'all\' to train on all letters')
+parser.add_argument('--csv_path', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/custom_datasets/', help='path folder with the features csv (only used if letter_restr != all)')
+parser.add_argument('--img_path', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/custom_datasets/', help='path to the folder containing the images (only used if letter_restr != all)')
 parser.add_argument('--img_size', type=int, default=64, help='size of each image dimension')
 parser.add_argument('--channels', type=int, default=1, help='number of image channels')
 parser.add_argument('--sample_interval', type=int, default=500, help='interval between image sampling')
@@ -36,7 +39,7 @@ parser.add_argument('--incep_imgs', type=bool, default=False, help='Get inceptio
 opt = parser.parse_args()
 print(opt)
 
-# ----- Meta-data ---- #
+# ----- Meta-data and preprocessing ---- #
 
 alphabet = ['A', 'B',  'C',   'D',  'E', 'F', 'G', 'H',  'I', 'J','K', 'L', 'M',   'N', 'O',  'P',  'Q',  'R', 'S',  'T', 'U','V',  'W','X', 'Y','Z', '']
 # let cnt  [2415, 580, 2141, 1968, 2090, 888, 527, 1517, 2417, 3, 83, 1142, 1326, 1543, 1100, 2180, 2198, 755, 2564, 1249, 5, 1653, 115, 48, 25, 118, 0]
@@ -94,8 +97,8 @@ names_list = ['Simon Bevilaqua', 'Matthieu David', 'Valentin Curio', 'Gabriel Ka
                 'Christoffel Plantin', 'Gilles Huguetan', 'Baldassare Constantini', 'Gerard Morrhe', 'Jacques Giunta', 'Bocchiana Nova Academia']
 
 
-# -------------------- #
 
+# Get the number of classes, the values of those classes and print the length
 if opt.training_feat == 'letters':
     n_classes = len(alphabet)
     attr_list = alphabet
@@ -115,9 +118,17 @@ elif opt.training_feat == 'names':
 else:
     raise ValueError('You cannot train on the chosen attribute, please use one of the following: \'letters\', \'countries\', \'cities\' or \'names\'.')
 
+
+# seperate data is necessary
+
+
+# -------- Model and optimizer set-up --------- #
+
+# Check if GPU is available for training
 cuda = True if torch.cuda.is_available() else False
 
 def weights_init_normal(m):
+    """ Function to initialize the weights of the models """
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
@@ -126,6 +137,7 @@ def weights_init_normal(m):
         torch.nn.init.constant_(m.bias.data, 0.0)
 
 class Generator(nn.Module):
+    """ The generator model """
     def __init__(self):
         super(Generator, self).__init__()
 
@@ -156,6 +168,7 @@ class Generator(nn.Module):
         return img
 
 class Discriminator(nn.Module):
+    """ The discriminator model """
     def __init__(self):
         super(Discriminator, self).__init__()
 
@@ -200,6 +213,7 @@ auxiliary_loss = torch.nn.CrossEntropyLoss()
 generator = Generator()
 discriminator = Discriminator()
 
+# move to GPU is one is available
 if cuda:
     generator.cuda()
     discriminator.cuda()
@@ -210,17 +224,33 @@ if cuda:
 generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
-# load the initials dataset
-data = dataset.get_dataset(letter='none')
-print("there are", len(data), "images in this dataset")
-dataloader = DataLoader(dataset=data, num_workers=0, batch_size=32, shuffle=True, pin_memory=True)
-
 # Optimizers
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
 optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
 
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
+
+# -------- Creation of dataloader --------- #
+
+# load the initials dataset
+if opt.letter_restr == 'all':
+    data = dataset.get_dataset()
+else: 
+    csv = opt.csv_path + 'list_attr_' + opt.training_feat + '_' + opt.letter_restr.upper() + '.csv'
+    img_dir = opt.img_path + 'Seperated_' + opt.letter_restr.upper() + '/'
+    extractor.extract(opt.letter_restr, opt.training_feat, csv, img_dir)
+    data = dataset.get_letterdataset(csv, img_dir)
+
+# print the number of images that will be trained on
+print('There are', len(data), 'images in this dataset')
+
+# create the dataloader
+dataloader = DataLoader(dataset=data, num_workers=opt.n_cpu, batch_size=opt.batch_size, shuffle=True, pin_memory=True)
+
+
+# -------- Helper-functions --------- #
 
 def count_class(feature):
     """Counts the number of items for each feature value in the dataset"""
@@ -237,6 +267,7 @@ def count_class(feature):
     else: 
         raise ValueError('Feature is not a valid value.')
 
+    # setup a list with a counter (starting at 0) for each feature
     for i in range(len(attribute)):
         counts.append(0)
 
@@ -276,20 +307,21 @@ def get_inception_images(nr_classes, attribute_list):
             save_image(gen_imgs[j], 'inception_imgs/' + str(i) + '_' + attribute_list[j] + '.png')
 
         
-# Function to save the current state
 def save_checkpoint(state, filename='checkpoint.pth.tar'):
+    """ Function to save the current state of both the generator and discriminator """
     saveloc = 'models/' + filename
     torch.save(state, saveloc)
     print('-- Checkpoint saved --')
 
-# Function to load model (either a fully trained model or in progress model)
+
 def load_checkpoint():
+    """ Function to load model (either a fully trained model or in progress model) """
     cp_path = 'models/checkpoint.pth.tar'
     if os.path.isfile(cp_path):
         print('Loading checkpoint...')
         # load the data
         checkpoint = torch.load(cp_path)
-        # load the states of the models and optimizers
+        # forward it to the appropriate parts of the model
         epoch = checkpoint['epoch']
         generator.load_state_dict(checkpoint['g_state'])
         discriminator.load_state_dict(checkpoint['d_state'])
@@ -298,12 +330,12 @@ def load_checkpoint():
         print('Checkpoint successfully loaded')
         return epoch
     else:
+        # There is no checkpoint so we can start at epoch 0
         print('No checkpoint to load.')
         return 0
 
-# ----------
-#  Training
-# ----------
+
+# -------- Training --------- #
 
 # Load checkpoint if one if available
 start_epoch = load_checkpoint()
@@ -312,19 +344,19 @@ start_epoch = load_checkpoint()
 for epoch in range(opt.n_epochs):
 
     if epoch <= start_epoch:
+        # Skip epoch numbers that were already done (in case of loading from a checkpoint)
         continue
     else: 
         for i, (imgs, letters, countries, cities, names) in enumerate(dataloader):
-
+ 
             batch_size = imgs.shape[0]
 
             # Adversarial ground truths
             valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
             fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
-            # transform the attributes to a list of ints and then to a tensor
+            # Get a list of flags to represent the features
             labels = []
-
             if opt.training_feat == 'letters':
                 for k, initial in enumerate(letters):
                     for l, letter in enumerate(alphabet):
@@ -349,7 +381,7 @@ for epoch in range(opt.n_epochs):
                         if name == l_name:
                             labels.append(l)
 
-
+            # transform the features to a tensor
             labels = array(labels)
             labels = torch.from_numpy(labels)
 
@@ -409,6 +441,8 @@ for epoch in range(opt.n_epochs):
                                                                 d_loss.item(), 100 * d_acc,
                                                                 g_loss.item()))
             batches_done = epoch * len(dataloader) + i
+           
+            # Get a sample image at the indicated sample_interval
             if batches_done % opt.sample_interval == 0:
                 sample_image(n_row=10, batches_done=batches_done)
 
