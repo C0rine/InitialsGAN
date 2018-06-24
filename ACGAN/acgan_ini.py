@@ -17,10 +17,12 @@ import torch
 
 import dataset
 import extractor
+import evaluation
 
 os.makedirs('images', exist_ok=True)
 
 parser = argparse.ArgumentParser()
+# Model settings
 parser.add_argument('--n_epochs', type=int, default=2000, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=32, help='size of the batches')
 parser.add_argument('--lr', type=float, default=0.0002, help='adam: learning rate')
@@ -28,16 +30,30 @@ parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first 
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--n_cpu', type=int, default=0, help='number of cpu threads to use during batch generation')
 parser.add_argument('--latent_dim', type=int, default=500, help='dimensionality of the latent space')
+parser.add_argument('--sample_interval', type=int, default=500, help='interval between image sampling')
+parser.add_argument('--channels', type=int, default=1, help='number of image channels')
+parser.add_argument('--img_size', type=int, default=64, help='size of each image dimension')
+
+# Specify training
+parser.add_argument('--train', type=bool, default=False, help='Whether or not to do the training')
 parser.add_argument('--training_feat', type=str, default='countries', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
-parser.add_argument('--letter_restr', type=str, default='all', help='restrict training to this letter, use \'all\' to train on all letters')
+parser.add_argument('--letter_restr', type=str, default='S', help='restrict training to this letter, use \'all\' to train on all letters')
+
+# Set path to data
 parser.add_argument('--csv_path', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/custom_datasets/', help='path folder with the features csv (only used if letter_restr != all)')
 parser.add_argument('--img_path', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/custom_datasets/', help='path to the folder containing the images (only used if letter_restr != all)')
-parser.add_argument('--img_size', type=int, default=64, help='size of each image dimension')
-parser.add_argument('--channels', type=int, default=1, help='number of image channels')
-parser.add_argument('--sample_interval', type=int, default=500, help='interval between image sampling')
-parser.add_argument('--incep_imgs', type=bool, default=False, help='Get inception images at the end of training')
+
+# Specify evaluation
+parser.add_argument('--test', type=bool, default=True, help='Whether or not to do the testing')
+parser.add_argument('--eval_dir', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/evaluation/', help='Set the directory for where to save the evaluation data')
+parser.add_argument('--get_incep_imgs', type=bool, default=False, help='Get inception images at the end of training')
+parser.add_argument('--nn', type=int, default=3, help='Get this number of nearest neighbors, 0 for no NN evaluation')
+
 opt = parser.parse_args()
 print(opt)
+
+
+
 
 # ----- Meta-data and preprocessing ---- #
 
@@ -97,7 +113,6 @@ names_list = ['Simon Bevilaqua', 'Matthieu David', 'Valentin Curio', 'Gabriel Ka
                 'Christoffel Plantin', 'Gilles Huguetan', 'Baldassare Constantini', 'Gerard Morrhe', 'Jacques Giunta', 'Bocchiana Nova Academia']
 
 
-
 # Get the number of classes, the values of those classes and print the length
 if opt.training_feat == 'letters':
     n_classes = len(alphabet)
@@ -118,8 +133,6 @@ elif opt.training_feat == 'names':
 else:
     raise ValueError('You cannot train on the chosen attribute, please use one of the following: \'letters\', \'countries\', \'cities\' or \'names\'.')
 
-
-# seperate data is necessary
 
 
 # -------- Model and optimizer set-up --------- #
@@ -234,20 +247,22 @@ LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
 # -------- Creation of dataloader --------- #
 
-# load the initials dataset
-if opt.letter_restr == 'all':
-    data = dataset.get_dataset()
-else: 
-    csv = opt.csv_path + 'list_attr_' + opt.training_feat + '_' + opt.letter_restr.upper() + '.csv'
-    img_dir = opt.img_path + 'Seperated_' + opt.letter_restr.upper() + '/'
-    extractor.extract(opt.letter_restr, opt.training_feat, csv, img_dir)
-    data = dataset.get_letterdataset(csv, img_dir)
+# only necessary if we want to perform training
+if opt.train:
+    # load the initials dataset
+    if opt.letter_restr == 'all':
+        data = dataset.get_dataset()
+    else: 
+        csv = opt.csv_path + 'list_attr_' + opt.training_feat + '_' + opt.letter_restr.upper() + '.csv'
+        img_dir = opt.img_path + 'Seperated_' + opt.letter_restr.upper() + '/'
+        extractor.extract(opt.letter_restr, opt.training_feat, csv, img_dir)
+        data = dataset.get_letterdataset(csv, img_dir)
 
-# print the number of images that will be trained on
-print('There are', len(data), 'images in this dataset')
+    # print the number of images that will be trained on
+    print('There are', len(data), 'images in this dataset')
 
-# create the dataloader
-dataloader = DataLoader(dataset=data, num_workers=opt.n_cpu, batch_size=opt.batch_size, shuffle=True, pin_memory=True)
+    # create the dataloader
+    dataloader = DataLoader(dataset=data, num_workers=opt.n_cpu, batch_size=opt.batch_size, shuffle=True, pin_memory=True)
 
 
 # -------- Helper-functions --------- #
@@ -290,23 +305,7 @@ def sample_image(n_row, batches_done):
     
     save_image(gen_imgs.data, 'images/%d.png' % batches_done, nrow=n_row, normalize=True)
 
-
-def get_inception_images(nr_classes, attribute_list):
-    """we need about 50.000 images with uniform distribution over all classes"""
-    iterations = int(50000/nr_classes) + 1
-    for i in range(iterations):
-        # Sample noise
-        z = Variable(FloatTensor(np.random.normal(0, 1, (nr_classes, opt.latent_dim))))
-        # Get labels ranging from 0 to n_classes for n rows
-        labels = np.array([num for num in range(nr_classes)]) 
-        labels = Variable(LongTensor(labels))
-        gen_imgs = generator(z, labels)
-
-        for j, image in enumerate(gen_imgs):
-            # print(labels.cpu().numpy()[j])
-            save_image(gen_imgs[j], 'inception_imgs/' + str(i) + '_' + attribute_list[j] + '.png')
-
-        
+     
 def save_checkpoint(state, filename='checkpoint.pth.tar'):
     """ Function to save the current state of both the generator and discriminator """
     saveloc = 'models/' + filename
@@ -336,124 +335,138 @@ def load_checkpoint():
 
 
 # -------- Training --------- #
+if opt.train: 
+    # Load checkpoint if one if available
+    start_epoch = load_checkpoint()
 
-# Load checkpoint if one if available
-start_epoch = load_checkpoint()
+    # Start training process
+    for epoch in range(opt.n_epochs):
 
-# Start training process
-for epoch in range(opt.n_epochs):
+        if epoch <= start_epoch:
+            # Skip epoch numbers that were already done (in case of loading from a checkpoint)
+            continue
+        else: 
+            for i, (imgs, letters, countries, cities, names) in enumerate(dataloader):
+     
+                batch_size = imgs.shape[0]
 
-    if epoch <= start_epoch:
-        # Skip epoch numbers that were already done (in case of loading from a checkpoint)
-        continue
-    else: 
-        for i, (imgs, letters, countries, cities, names) in enumerate(dataloader):
- 
-            batch_size = imgs.shape[0]
+                # Adversarial ground truths
+                valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
+                fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
-            # Adversarial ground truths
-            valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-            fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+                # Get a list of flags to represent the features
+                labels = []
+                if opt.training_feat == 'letters':
+                    for k, initial in enumerate(letters):
+                        for l, letter in enumerate(alphabet):
+                            if initial == letter:
+                                labels.append(l)
 
-            # Get a list of flags to represent the features
-            labels = []
-            if opt.training_feat == 'letters':
-                for k, initial in enumerate(letters):
-                    for l, letter in enumerate(alphabet):
-                        if initial == letter:
-                            labels.append(l)
+                elif opt.training_feat == 'countries':
+                    for k, country in enumerate(countries):
+                        for l, l_country in enumerate(country_list):
+                            if country == l_country:
+                                labels.append(l)
 
-            elif opt.training_feat == 'countries':
-                for k, country in enumerate(countries):
-                    for l, l_country in enumerate(country_list):
-                        if country == l_country:
-                            labels.append(l)
+                elif opt.training_feat == 'cities':
+                    for k, city in enumerate(cities):
+                        for l, l_city in enumerate(cities_list):
+                            if city == l_city:
+                                labels.append(l)
 
-            elif opt.training_feat == 'cities':
-                for k, city in enumerate(cities):
-                    for l, l_city in enumerate(cities_list):
-                        if city == l_city:
-                            labels.append(l)
+                elif opt.training_feat == 'names':
+                    for k, name in enumerate(names):
+                        for l, l_name in enumerate(names_list):
+                            if name == l_name:
+                                labels.append(l)
 
-            elif opt.training_feat == 'names':
-                for k, name in enumerate(names):
-                    for l, l_name in enumerate(names_list):
-                        if name == l_name:
-                            labels.append(l)
+                # transform the features to a tensor
+                labels = array(labels)
+                labels = torch.from_numpy(labels)
 
-            # transform the features to a tensor
-            labels = array(labels)
-            labels = torch.from_numpy(labels)
+                # Configure input
+                real_imgs = Variable(imgs.type(FloatTensor))
+                labels = Variable(labels.type(LongTensor))
 
-            # Configure input
-            real_imgs = Variable(imgs.type(FloatTensor))
-            labels = Variable(labels.type(LongTensor))
+                # -----------------
+                #  Train Generator
+                # -----------------
 
-            # -----------------
-            #  Train Generator
-            # -----------------
+                optimizer_G.zero_grad()
 
-            optimizer_G.zero_grad()
+                # Sample noise and labels as generator input
+                z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, opt.latent_dim))))
+                gen_labels = Variable(LongTensor(np.random.randint(0, n_classes, batch_size)))
 
-            # Sample noise and labels as generator input
-            z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, opt.latent_dim))))
-            gen_labels = Variable(LongTensor(np.random.randint(0, n_classes, batch_size)))
+                # Generate a batch of images
+                gen_imgs = generator(z, gen_labels)
 
-            # Generate a batch of images
-            gen_imgs = generator(z, gen_labels)
+                # Loss measures generator's ability to fool the discriminator
+                validity, pred_label = discriminator(gen_imgs)
+                g_loss = 0.5 * (adversarial_loss(validity, valid) + \
+                                auxiliary_loss(pred_label, gen_labels))
 
-            # Loss measures generator's ability to fool the discriminator
-            validity, pred_label = discriminator(gen_imgs)
-            g_loss = 0.5 * (adversarial_loss(validity, valid) + \
-                            auxiliary_loss(pred_label, gen_labels))
+                g_loss.backward()
+                optimizer_G.step()
 
-            g_loss.backward()
-            optimizer_G.step()
+                # ---------------------
+                #  Train Discriminator
+                # ---------------------
 
-            # ---------------------
-            #  Train Discriminator
-            # ---------------------
+                optimizer_D.zero_grad()
 
-            optimizer_D.zero_grad()
+                # Loss for real images
+                real_pred, real_aux = discriminator(real_imgs)
+                d_real_loss =  (adversarial_loss(real_pred, valid) + \
+                                auxiliary_loss(real_aux, labels)) / 2
 
-            # Loss for real images
-            real_pred, real_aux = discriminator(real_imgs)
-            d_real_loss =  (adversarial_loss(real_pred, valid) + \
-                            auxiliary_loss(real_aux, labels)) / 2
+                # Loss for fake images
+                fake_pred, fake_aux = discriminator(gen_imgs.detach())
+                d_fake_loss =  (adversarial_loss(fake_pred, fake) + \
+                                auxiliary_loss(fake_aux, gen_labels)) / 2
 
-            # Loss for fake images
-            fake_pred, fake_aux = discriminator(gen_imgs.detach())
-            d_fake_loss =  (adversarial_loss(fake_pred, fake) + \
-                            auxiliary_loss(fake_aux, gen_labels)) / 2
+                # Total discriminator loss
+                d_loss = (d_real_loss + d_fake_loss) / 2
 
-            # Total discriminator loss
-            d_loss = (d_real_loss + d_fake_loss) / 2
+                # Calculate discriminator accuracy
+                pred = np.concatenate([real_aux.data.cpu().numpy(), fake_aux.data.cpu().numpy()], axis=0)
+                gt = np.concatenate([labels.data.cpu().numpy(), gen_labels.data.cpu().numpy()], axis=0)
+                d_acc = np.mean(np.argmax(pred, axis=1) == gt)
 
-            # Calculate discriminator accuracy
-            pred = np.concatenate([real_aux.data.cpu().numpy(), fake_aux.data.cpu().numpy()], axis=0)
-            gt = np.concatenate([labels.data.cpu().numpy(), gen_labels.data.cpu().numpy()], axis=0)
-            d_acc = np.mean(np.argmax(pred, axis=1) == gt)
+                d_loss.backward()
+                optimizer_D.step()
 
-            d_loss.backward()
-            optimizer_D.step()
+                print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %d%%] [G loss: %f]" % (epoch, opt.n_epochs, i, len(dataloader),
+                                                                    d_loss.item(), 100 * d_acc,
+                                                                    g_loss.item()))
+                batches_done = epoch * len(dataloader) + i
+               
+                # Get a sample image at the indicated sample_interval
+                if batches_done % opt.sample_interval == 0:
+                    sample_image(n_row=10, batches_done=batches_done)
 
-            print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %d%%] [G loss: %f]" % (epoch, opt.n_epochs, i, len(dataloader),
-                                                                d_loss.item(), 100 * d_acc,
-                                                                g_loss.item()))
-            batches_done = epoch * len(dataloader) + i
-           
-            # Get a sample image at the indicated sample_interval
-            if batches_done % opt.sample_interval == 0:
-                sample_image(n_row=10, batches_done=batches_done)
+        # Save the model after each epoch
+        save_checkpoint({
+            'epoch': (epoch),
+            'g_state': generator.state_dict(),
+            'd_state': discriminator.state_dict(),
+            'g_optim' : optimizer_G.state_dict(),
+            'd_optim' : optimizer_D.state_dict()
+        })
 
-    # Save the model after each epoch
-    save_checkpoint({
-        'epoch': (epoch),
-        'g_state': generator.state_dict(),
-        'd_state': discriminator.state_dict(),
-        'g_optim' : optimizer_G.state_dict(),
-        'd_optim' : optimizer_D.state_dict()
-    })
+if opt.test: 
+    # Create the evaluation directory if it is not yet present
+    if not os.path.exists(opt.eval_dir):
+        os.makedirs(opt.eval_dir)
 
-if opt.incep_imgs:
-    get_inception_images(n_classes, attr_list)
+    # generate 50000 images with the trained model 
+    if opt.get_incep_imgs:
+        evaluation.get_inception_images(n_classes, attr_list, opt.eval_dir)
+
+    # perform NN evaluation is nr of neighbors is not set to zero
+    if nn != 0:
+        # evaluation.nearest_neighbor(opt.nn, 10, 20, opt.eval_dir, opt.img_path)
+        nn_dir = opt.eval_dir + 'nn/'
+        if not os.path.exists(nn_dir):
+            os.makedirs(nn_dir)
+        evaluation.nearest_neighbor(opt.nn, 10, 20, 'Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_letters/', nn_dir)

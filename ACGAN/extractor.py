@@ -6,12 +6,6 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from torchvision import utils
 
-# Parse input arguments
-# parser = argparse.ArgumentParser()
-# parser.add_argument('--letter', type=str, default='S', help='the letter to seperate') # defaults to 's' as this letter is most often present in the dataset
-# parser.add_argument('--feature', type=str, default='countries', help='the feature for which to extract the data')
-# opt = parser.parse_args()
-# print(opt)
 
 def extract(sep_letter, feature, csv, img_folder):
 
@@ -71,6 +65,7 @@ def extract(sep_letter, feature, csv, img_folder):
 	image_id = 0
 
 	for i in range(len(data)):
+		print(i)
 
 		# Extract the data from the HDF5 file
 		image, letter, country, city, name = data.__getitem__(i)
