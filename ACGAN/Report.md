@@ -14,7 +14,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | Feature       | SSIM             | Incep. Score  | Clas. Acc. |
 | ------------- |-----------------:| -------------:| ----------:|
 | letter        | 0.0758981699106  | -             | -          |
-| country       | -                | -             | -          |
+| country       | 0.105652152568   | -             | -          |
 | city          | -                | -             | -          |
 | name          | -                | -             | -          |
 
@@ -48,19 +48,19 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | Y        | 0.0671621608271 | 
 | Z        | 0.0677348569663 | 
 
-| Country  | SSIM          | 
-| -------- |--------------:| 
-| FR       | -             | 
-| CH       | -             | 
-| DE       | -             |
-| ES       | -             | 
-| IT       | -             | 
-| BE       | -             | 
-| GB       | -             | 
-| POR      | -             | 
-| NL       | -             | 
-| DK       | -             | 
-| CZ       | -             | 
+| Country  | SSIM            | 
+| -------- |----------------:| 
+| FR       | 0.0720007666339 | 
+| CH       | 0.14266396003   | 
+| DE       | 0.107758386192  |
+| ES       | 0.107229313702  | 
+| IT       | 0.081832027869  | 
+| BE       | 0.106115551767  | 
+| GB       | 0.128818726607  | 
+| POR      | 0.0913976069386 | 
+| NL       | 0.113557890638  | 
+| DK       | 0.119420152603  | 
+| CZ       | 0.0913792952651 | 
 
 
 ### Nearest Neighbor examples
