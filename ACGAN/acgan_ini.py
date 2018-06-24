@@ -36,7 +36,7 @@ parser.add_argument('--img_size', type=int, default=64, help='size of each image
 
 # Specify training
 parser.add_argument('--train', type=bool, default=False, help='Whether or not to do the training')
-parser.add_argument('--training_feat', type=str, default='countries', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
+parser.add_argument('--training_feat', type=str, default='letters', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
 parser.add_argument('--letter_restr', type=str, default='S', help='restrict training to this letter, use \'all\' to train on all letters')
 
 # Set path to data
@@ -47,7 +47,8 @@ parser.add_argument('--img_path', type=str, default='Z:/CGANs/PyTorch-GAN/implem
 parser.add_argument('--test', type=bool, default=True, help='Whether or not to do the testing')
 parser.add_argument('--eval_dir', type=str, default='Z:/CGANs/PyTorch-GAN/implementations/acgan/evaluation/', help='Set the directory for where to save the evaluation data')
 parser.add_argument('--get_incep_imgs', type=bool, default=False, help='Get inception images at the end of training')
-parser.add_argument('--nn', type=int, default=3, help='Get this number of nearest neighbors, 0 for no NN evaluation')
+parser.add_argument('--nn', type=int, default=0, help='Get this number of nearest neighbors, 0 for no NN evaluation')
+parser.add_argument('--ssim', type=bool, default=True, help='Whether or not to perform SSIM evaluation')
 
 opt = parser.parse_args()
 print(opt)
@@ -305,6 +306,22 @@ def sample_image(n_row, batches_done):
     
     save_image(gen_imgs.data, 'images/%d.png' % batches_done, nrow=n_row, normalize=True)
 
+
+def get_inception_images(nr_classes, attribute_list, save_dir):
+    """we need about 50.000 images with uniform distribution over all classes"""
+    iterations = int(50000/nr_classes) + 1
+    for i in range(iterations):
+        # Sample noise
+        z = Variable(FloatTensor(np.random.normal(0, 1, (nr_classes, opt.latent_dim))))
+        # Get labels ranging from 0 to n_classes for n rows
+        labels = np.array([num for num in range(nr_classes)]) 
+        labels = Variable(LongTensor(labels))
+        gen_imgs = generator(z, labels)
+
+        for j, image in enumerate(gen_imgs):
+            # print(labels.cpu().numpy()[j])
+            save_image(gen_imgs[j], save_dir + str(i) + '_' + attribute_list[j] + '.jpg')
+
      
 def save_checkpoint(state, filename='checkpoint.pth.tar'):
     """ Function to save the current state of both the generator and discriminator """
@@ -461,12 +478,16 @@ if opt.test:
 
     # generate 50000 images with the trained model 
     if opt.get_incep_imgs:
-        evaluation.get_inception_images(n_classes, attr_list, opt.eval_dir)
+        get_inception_images(n_classes, attr_list, opt.eval_dir)
 
     # perform NN evaluation is nr of neighbors is not set to zero
-    if nn != 0:
-        # evaluation.nearest_neighbor(opt.nn, 10, 20, opt.eval_dir, opt.img_path)
+    if opt.nn != 0:
         nn_dir = opt.eval_dir + 'nn/'
         if not os.path.exists(nn_dir):
             os.makedirs(nn_dir)
         evaluation.nearest_neighbor(opt.nn, 10, 20, 'Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_letters/', nn_dir)
+
+    # perform SSIM evaluation
+    if opt.ssim: 
+        ssim_class_means = evaluation.SSIM_classmeans('Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_letters/', attr_list)
+        print(ssim_class_means)

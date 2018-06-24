@@ -5,22 +5,11 @@ import numpy as np
 import PIL
 import torchvision
 import pickle
-
-def get_inception_images(nr_classes, attribute_list, save_dir):
-    """we need about 50.000 images with uniform distribution over all classes"""
-    iterations = int(50000/nr_classes) + 1
-    for i in range(iterations):
-        # Sample noise
-        z = Variable(FloatTensor(np.random.normal(0, 1, (nr_classes, opt.latent_dim))))
-        # Get labels ranging from 0 to n_classes for n rows
-        labels = np.array([num for num in range(nr_classes)]) 
-        labels = Variable(LongTensor(labels))
-        gen_imgs = generator(z, labels)
-
-        for j, image in enumerate(gen_imgs):
-            # print(labels.cpu().numpy()[j])
-            save_image(gen_imgs[j], save_dir + str(i) + '_' + attribute_list[j] + '.jpg')
-
+import random
+import sys
+from scipy import signal
+from scipy import ndimage
+from skimage.measure import compare_ssim as ssim
 
 def nearest_neighbor(nr_neighbors, nr_gen_img_start, nr_gen_img_end, gen_img_dir, save_dir):
 	print('Starting with Nearest Neighbor search for ' + str(nr_neighbors) + ' neighbors.')
@@ -78,5 +67,40 @@ def nearest_neighbor(nr_neighbors, nr_gen_img_start, nr_gen_img_end, gen_img_dir
 	print('Nearest Neighbor search completed and images saved to: ' + save_dir)
 
 
-# def SSIM():
-	# TO DO
+def SSIM_classmeans(gen_imgs_dir, class_list, idx1=-5, idx2=-4):
+
+	all_ssims = []
+	path = gen_imgs_dir
+
+	for clas in class_list:
+
+		print('SSIM for class: ' + clas)
+		# take random 100 pairs of imgs from gen_imgs_dir
+		hundred_ssims = []
+
+		# create a list with all images from the folder that below to the class
+		class_imgs = []
+		for img in os.listdir(gen_imgs_dir):
+			if img[idx1:idx2] == clas:
+				class_imgs.append(img)
+		if(len(class_imgs) < 2):
+			# too small no samples, add 0 to fill
+			all_ssims.append(1)
+			break
+
+		for i in range(100):
+			# get a random pair of iamages from the list of images for one class
+			random_img1, random_img2 = random.sample(class_imgs, 2)
+			# convert them to numpy arrays
+			random_np_img1 = np.asarray(PIL.Image.open(gen_imgs_dir + random_img1))
+			random_np_img2 = np.asarray(PIL.Image.open(gen_imgs_dir + random_img2))
+
+			# calculate SSIM between the imgs and add to list
+			hundred_ssims.append(ssim(random_np_img1, random_np_img2, multichannel=True))
+
+		# return the mean of the list
+		all_ssims.append(np.mean(hundred_ssims))
+		print(np.mean(hundred_ssims))
+
+	# return a list of the SSIMs 
+	return all_ssims
