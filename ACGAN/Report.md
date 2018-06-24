@@ -4,7 +4,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 
 (Shitty) explanation of the evaluation metrics:
 
-* __SSIM__: mean from the [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) between 100 random generated image pairs from the same class. Measure diversity within a class. 
+* __SSIM__: mean from the [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) between 100 random generated image pairs from the same class. Measure diversity within a class. SSIM between images ranges between -1 and 1, -1 being the inverse of eachother, 1 being the same image.
 * __Inception Score__: measures the diversity of images across classes and 'classifiability' of generated images using a pre-trained classifier.
 * __Classification Accuracy__: Use a pretrained classifier and check if images generated when conditioned on a certain feature are also actually classified as such. 
 * __Nearest neighbors__: for a generated image, finds the nearest neighbor from the training dataset to make sure the GAN is not just reproducing images.
