@@ -4,9 +4,9 @@ Overview of the results for the ACGAN. The first section shows the results when 
 
 (Shitty) explanation of the evaluation metrics:
 
-* __SSIM__: mean from the [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) between 100 random generated image pairs from the same class. Measure diversity within a class. SSIM between images ranges between -1 and 1, -1 being the inverse of eachother, 1 being the same image.
+* __SSIM__: mean from the [SSIM](https://en.wikipedia.org/wiki/Structural_similarity) between 100 random generated image pairs from the same class. Measure diversity within a class. SSIM between images ranges between -1 and 1. The higher the score, the more similar the iamges. 
 * __Inception Score__: measures the diversity of images across classes and 'classifiability' of generated images using a pre-trained classifier.
-* __Classification Accuracy__: Use a pretrained classifier and check if images generated when conditioned on a certain feature are also actually classified as such. 
+* __Classification Accuracy__: Use a pretrained classifier and check if images generated when conditioned on a certain class are also actually classified as such. 
 * __Nearest neighbors__: for a generated image, finds the nearest neighbor from the training dataset to make sure the GAN is not just reproducing images.
 
 ## 1. Full dataset 
@@ -18,7 +18,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | city          | 0.0630308865127  | -             | -          |
 | name          | -                | -             | -          |
 
-### SSIM for each seperate class (for letters and countries only)
+### SSIM for each seperate class (for letters and countries only for brevity sake)
 | Letter   | SSIM            | 
 | -------- |----------------:| 
 | A        | 0.0950964186382 | 
