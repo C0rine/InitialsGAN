@@ -36,7 +36,7 @@ parser.add_argument('--img_size', type=int, default=64, help='size of each image
 
 # Specify training
 parser.add_argument('--train', type=bool, default=False, help='Whether or not to do the training')
-parser.add_argument('--training_feat', type=str, default='letters', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
+parser.add_argument('--training_feat', type=str, default='names', help='feature to train on, choose from: \'letters\', \'countries\', \'cities\' or \'names\'')
 parser.add_argument('--letter_restr', type=str, default='S', help='restrict training to this letter, use \'all\' to train on all letters')
 
 # Set path to data
@@ -478,6 +478,7 @@ if opt.test:
 
     # generate 50000 images with the trained model 
     if opt.get_incep_imgs:
+        print('going to evaluation now')
         get_inception_images(n_classes, attr_list, opt.eval_dir)
 
     # perform NN evaluation is nr of neighbors is not set to zero
@@ -485,9 +486,10 @@ if opt.test:
         nn_dir = opt.eval_dir + 'nn/'
         if not os.path.exists(nn_dir):
             os.makedirs(nn_dir)
-        evaluation.nearest_neighbor(opt.nn, 10, 20, 'Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_letters/', nn_dir)
+        evaluation.nearest_neighbor(opt.nn, 10, 20, 'Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs-names/', nn_dir)
 
     # perform SSIM evaluation
     if opt.ssim: 
-        ssim_class_means = evaluation.SSIM_classmeans('Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_letters/', attr_list)
+        ssim_class_means = evaluation.SSIM_classmeans('Z:/CGANs/PyTorch-GAN/implementations/acgan/Z-Finished/inception_imgs_names/', attr_list)
         print(ssim_class_means)
+        print(np.mean(ssim_class_means))

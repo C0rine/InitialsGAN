@@ -81,6 +81,7 @@ def SSIM_classmeans(gen_imgs_dir, class_list, idx1=-5, idx2=-4):
 		# create a list with all images from the folder that below to the class
 		class_imgs = []
 		for img in os.listdir(gen_imgs_dir):
+			idx1 = img[:idx2].rfind('_')+1
 			if img[idx1:idx2] == clas:
 				class_imgs.append(img)
 		if(len(class_imgs) < 2):
