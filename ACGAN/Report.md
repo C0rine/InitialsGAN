@@ -49,7 +49,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | Z        | 0.0677348569663 | 
 
 | Country  | SSIM            | 
-| -------- |----------------:| 
+| -------- |-----------------| 
 | FR       | 0.0720007666339 | 
 | CH       | 0.14266396003   | 
 | DE       | 0.107758386192  |
