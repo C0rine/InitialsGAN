@@ -15,7 +15,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | ------------- |------------------| --------------| --------------| -----------|
 | letter        | 0.0758981699106  | 8.106493      | 0.05281187    | -          |
 | country       | 0.105652152568   | 1.345737      | 0.004514862   | -          |
-| city          | 0.0630308865127  | -             | -             | -          |
+| city          | 0.0630308865127  | 1.2466998     | 0.002201129   | -          |
 | name          | 0.047469899993   | -             | -             | -          |
 
 ### SSIM for each seperate class (for letters and countries only for brevity sake)
