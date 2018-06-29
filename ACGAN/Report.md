@@ -14,7 +14,7 @@ Overview of the results for the ACGAN. The first section shows the results when 
 | Feature       | SSIM             | Incep. Mean   | Incep. Std.   | Clas. Acc. |
 | ------------- |------------------| --------------| --------------| -----------|
 | letter        | 0.0758981699106  | 8.106493      | 0.05281187    | -          |
-| country       | 0.105652152568   | -             | -             | -          |
+| country       | 0.105652152568   | 1.345737      | 0.004514862   | -          |
 | city          | 0.0630308865127  | -             | -             | -          |
 | name          | 0.047469899993   | -             | -             | -          |
 
